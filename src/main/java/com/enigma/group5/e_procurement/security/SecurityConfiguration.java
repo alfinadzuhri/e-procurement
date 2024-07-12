@@ -35,6 +35,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET,"/api/v1/products/images/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/v1/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/v1/warehouses").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/v1/vendor-product").permitAll()
                         .anyRequest().authenticated()
                 )
                 // menambahkan filter dari AuthenticationFilter
