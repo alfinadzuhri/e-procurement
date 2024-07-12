@@ -1,6 +1,7 @@
 package com.enigma.group5.e_procurement.dto.response;
 
 import lombok.*;
+import org.springframework.core.io.Resource;
 
 @Setter
 @Getter
@@ -14,6 +15,6 @@ public class VendorProductResponse {
     private String productName;
     private String productCategory;
     private Long price;
-    private String imagePath;
+    private ImageResponse imageResponse;
     private String productDescription;
 }

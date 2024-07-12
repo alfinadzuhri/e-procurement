@@ -1,8 +1,9 @@
 package com.enigma.group5.e_procurement.service.Impl;
 
+import com.enigma.group5.e_procurement.constant.APIUrl;
 import com.enigma.group5.e_procurement.dto.request.SearchVendorProductRequest;
+import com.enigma.group5.e_procurement.dto.response.ImageResponse;
 import com.enigma.group5.e_procurement.dto.response.VendorProductResponse;
-import com.enigma.group5.e_procurement.dto.response.WarehouseResponse;
 import com.enigma.group5.e_procurement.entity.Image;
 import com.enigma.group5.e_procurement.entity.Product;
 import com.enigma.group5.e_procurement.entity.Vendor;
@@ -14,9 +15,12 @@ import com.enigma.group5.e_procurement.service.VendorProductService;
 import com.enigma.group5.e_procurement.service.VendorService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -103,7 +107,13 @@ public class VendorProductServiceImpl implements VendorProductService {
 
         Pageable pageable = PageRequest.of(vendorProductRequest.getPage() - 1, vendorProductRequest.getSize(), sort);
 
-        List<VendorProductResponse> responses = vendorProductRepository.findAll().stream().map(vendorProduct -> parseToVendorProductResponse(vendorProduct)).toList();
+        List<VendorProductResponse> responses = vendorProductRepository.findAll().stream().map(vendorProduct -> {
+            try {
+                return parseToVendorProductResponse(vendorProduct);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }).toList();
 
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), responses.size());
@@ -120,20 +130,27 @@ public class VendorProductServiceImpl implements VendorProductService {
         return optionalVendorProduct.orElseThrow(() -> new RuntimeException("Vendor not found"));
     }
 
-    private VendorProductResponse parseToVendorProductResponse(VendorProduct vendorProduct){
+    private VendorProductResponse parseToVendorProductResponse(VendorProduct vendorProduct) throws IOException {
         Vendor vendor = vendorService.getById(vendorProduct.getVendor().getId());
         Product product = productService.getById(vendorProduct.getProduct().getId());
         Image image = imageService.searchById(product.getImage().getId());
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        ImageResponse imageResponse = ImageResponse.builder()
+                .name(image.getName())
+                .url(baseUrl + APIUrl.PRODUCT_IMAGE_API + image.getName())
+                .build();
 
-        return VendorProductResponse.builder()
+        VendorProductResponse response = VendorProductResponse.builder()
                 .vendorProductId(vendorProduct.getId())
                 .vendorName(vendor.getName())
                 .vendorAddress(vendor.getAddress())
                 .productName(product.getName())
                 .productCategory(product.getCategory())
                 .price(vendorProduct.getPrice())
-                .imagePath(image.getPath())
+                .imageResponse(imageResponse)
                 .productDescription(product.getDescription())
                 .build();
+
+        return response;
     }
 }

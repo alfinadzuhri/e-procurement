@@ -1,6 +1,8 @@
 package com.enigma.group5.e_procurement.service.Impl;
 
+import com.enigma.group5.e_procurement.constant.APIUrl;
 import com.enigma.group5.e_procurement.dto.request.SearchWarehouseRequest;
+import com.enigma.group5.e_procurement.dto.response.ImageResponse;
 import com.enigma.group5.e_procurement.dto.response.WarehouseResponse;
 import com.enigma.group5.e_procurement.entity.*;
 import com.enigma.group5.e_procurement.repository.WarehouseRepository;
@@ -15,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -154,6 +157,11 @@ public class WarehouseServiceImpl implements WarehouseService {
         Vendor vendor = vendorService.getById(vendorProduct.getVendor().getId());
         Product product = productService.getById(vendorProduct.getProduct().getId());
         Image image = imageService.searchById(product.getImage().getId());
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        ImageResponse imageResponse = ImageResponse.builder()
+                .name(image.getName())
+                .url(baseUrl + APIUrl.PRODUCT_IMAGE_API + image.getName())
+                .build();
 
         return WarehouseResponse.builder()
                 .warehouseId(warehouse.getId())
@@ -163,7 +171,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .productDescription(product.getDescription())
                 .price(warehouse.getPrice())
                 .stock(warehouse.getStock())
-                .ImagePath(image.getPath())
+                .imageResponse(imageResponse)
                 .build();
     }
 

@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -200,6 +201,8 @@ public class ProductServiceImpl implements ProductService {
 
         String imageId;
         String name;
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+
         if(product.getImage() == null){
             imageId = null;
             name = null;
@@ -213,7 +216,7 @@ public class ProductServiceImpl implements ProductService {
                 .name(product.getName())
                 .category(product.getCategory())
                 .image(ImageResponse.builder()
-                        .url(APIUrl.PRODUCT_IMAGE_DOWNLOAD_API + imageId)
+                        .url(baseUrl + APIUrl.PRODUCT_IMAGE_API + imageId)
                         .name(name)
                         .build())
                 .build();

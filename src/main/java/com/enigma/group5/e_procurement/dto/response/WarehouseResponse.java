@@ -15,5 +15,5 @@ public class WarehouseResponse {
     private String productDescription;
     private Long price;
     private Integer stock;
-    private String ImagePath;
+    private ImageResponse imageResponse;
 }
